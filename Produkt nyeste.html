@@ -1,0 +1,562 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Møllers Abonnements Beregner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter font */
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to borders */
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        /* Base style for all th elements in thead for consistent look */
+        thead th {
+             background-color: #e9e9e9;
+             font-weight: bold;
+        }
+         /* Style for the header row with provider names */
+        thead tr:first-child th {
+            font-size: 1.1em;
+            text-align: center;
+            /* Removed the default light grey background here */
+        }
+         /* Style for the header row with specific plan names */
+        thead tr:nth-child(2) th {
+            font-weight: normal; /* Less bold than provider names */
+            font-size: 0.9em;
+        }
+        /* Style for the first column (row headers) */
+        tbody tr th {
+             background-color: #e9e9e9; /* Match other th */
+             font-weight: bold;
+        }
+
+        td {
+            background-color: #fff;
+        }
+        tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+
+        /* Style for YouSee columns - applying a green background to th in the second header row and td */
+        thead tr:nth-child(2) th:nth-child(n+2):nth-child(-n+5), /* Target th from 2nd to 5th column in the second header row */
+        tbody tr td:nth-child(n+2):nth-child(-n+5)  /* Target td from 2nd to 5th column */
+        {
+            background-color: #e0f2e0; /* A light green color */
+        }
+
+        /* Style for Telenor columns - applying a blue background to th in the second header row and td */
+        thead tr:nth-child(2) th:nth-child(n+6):nth-child(-n+10), /* Target th from 6th to 10th column in the second header row */
+        tbody tr td:nth-child(n+6):nth-child(-n+10) /* Target td from 6th to 10th column */
+        {
+            background-color: #bbdefb; /* A light blue color for Telenor */
+        }
+
+        /* Style for CBB columns - applying a yellow background to th in the second header row and td */
+        thead tr:nth-child(2) th:nth-child(n+11):nth-child(-n+14), /* Target th from 11th to 14th column in the second header row */
+        tbody tr td:nth-child(n+11):nth-child(-n+14)  /* Target td from 11th to 14th column */
+        {
+            background-color: #fff9c4; /* A light yellow color for CBB */
+        }
+
+        /* Style for 3 columns - applying a purple/lilac background to th in the second header row and td */
+        thead tr:nth-child(2) th:nth-child(n+15):nth-child(-n+18), /* Target th from 15th to 18th column in the second header row */
+        tbody tr td:nth-child(n+15):nth-child(-n+18)  /* Target td from 15th to 18th column */
+        {
+            background-color: #e1bee7; /* A light purple/lilac color for 3 */
+        }
+
+        /* Set the background color of the first header row (provider names) to white */
+        thead tr:first-child th {
+            background-color: white;
+        }
+
+
+        /* Adding separators between provider sections to td and th */
+        /* Separator after YouSee (last YouSee column is index 3, which is the 5th element including the first th) */
+        thead tr th:nth-child(5), /* Apply to the last YouSee th in both header rows */
+        thead tr:nth-child(2) th:nth-child(5),
+        tbody tr td:nth-child(5) {
+            border-right: 3px solid #a0a0a0; /* Thicker, slightly darker border */
+        }
+
+        /* Separator after Telenor (last Telenor column is index 8, which is the 10th element including the first th) */
+        thead tr th:nth-child(10), /* Apply to the last Telenor th in both header rows */
+        thead tr:nth-child(2) th:nth-child(10),
+        tbody tr td:nth-child(10) {
+            border-right: 3px solid #a0a0a0; /* Thicker, slightly darker border */
+        }
+
+        /* Separator after CBB (last CBB column is index 12, which is the 14th element including the first th) */
+        thead tr th:nth-child(14), /* Apply to the last CBB th in both header rows */
+        thead tr:nth-child(2) th:nth-child(14),
+        tbody tr td:nth-child(14) {
+            border-right: 3px solid #a0a0a0; /* Thicker, slightly darker border */
+        }
+         /* No separator needed after the last 3 column */
+
+
+        #prisInputContainer {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        #prisInputContainer label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        #indtastPris, #abonnement, #antalNumre {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            width: calc(100% - 22px); /* Adjust width for padding and border */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+         /* Specific width for larger screens */
+        @media (min-width: 768px) {
+             #indtastPris, #abonnement, #antalNumre {
+                 width: 250px;
+             }
+        }
+
+        /* Style for the new extra rabat input fields within the table */
+        .ekstra-rabat-input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 80px; /* Adjust width as needed */
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .besparelse-resultat {
+            font-weight: bold;
+            color: green;
+        }
+        .rabat-tekst {
+            color: orange;
+        }
+        .negative-value {
+            color: red;
+        }
+
+         /* Responsive table - make it stack on small screens */
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr { border: 1px solid #ccc; margin-bottom: 5px; }
+            td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 50%;
+                text-align: right; /* Align content to the right */
+            }
+            td:before {
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                content: attr(data-label); /* Use data-label for mobile headers */
+                font-weight: bold;
+                text-align: left; /* Align label to the left */
+            }
+            /* Add data-label attributes to cells for mobile view */
+            #raekke-abonnement-pris td:before { content: "Abonnement pr. måned"; }
+            #raekke-rabat td:before { content: "Beregnet Rabat"; } /* Label back to Beregnet Rabat */
+            #raekke-ekstra-rabat-input td:before { content: "Ekstra rabat på produkt (pr. plan)"; } /* Label for the new row */
+            #raekke-betal-idag td:before { content: "Betal i dag"; }
+            #raekke-nuvaerende-omkostning td:before { content: "Nuv. Omkostning (6 mdr)"; }
+            #raekke-ialt-6mdr td:before { content: "I alt med nyt abb. (6 mdr)"; }
+            #raekke-din-besparelse td:before { content: "Din Besparelse (6 mdr)"; }
+
+            /* Adjust colspan row display on mobile */
+            tbody tr:last-child td {
+                padding: 10px;
+                text-align: center;
+                font-weight: normal;
+                border-bottom: none;
+            }
+
+             /* Adjust input width on small screens */
+            .ekstra-rabat-input {
+                width: calc(100% - 12px); /* Make input fill cell width */
+            }
+
+            /* Adjust mobile view borders for separators */
+             tbody tr td:nth-child(5),
+             tbody tr td:nth-child(10),
+             tbody tr td:nth-child(14) {
+                 border-right: none; /* Remove right border on mobile as it stacks */
+                 border-bottom: 3px solid #a0a0a0; /* Add a bottom border instead */
+             }
+             /* Ensure th elements in thead also get the bottom border on mobile */
+             thead tr:nth-child(2) th:nth-child(5),
+             thead tr:nth-child(2) th:nth-child(10),
+             thead tr:nth-child(2) th:nth-child(14) {
+                 border-right: none;
+                 border-bottom: 3px solid #a0a0a0;
+             }
+        }
+    </style>
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Møllers Abonnements Beregner</h1>
+
+    <div id="prisInputContainer">
+        <label for="abonnement">Samlede nuværende abonnementsbeløb pr. måned (for alle numre):</label>
+        <input type="number" id="abonnement" name="abonnement" placeholder="f.eks. 499" oninput="opdaterBesparelser()">
+
+        <label for="indtastPris">Samlet pris for de produkter du køber i dag (uden rabat):</label>
+        <input type="number" id="indtastPris" name="indtastPris" placeholder="f.eks. 6999" oninput="opdaterBesparelser()">
+
+        <label for="antalNumre">Antal numre der skal flyttes:</label>
+        <input type="number" id="antalNumre" name="antalNumre" placeholder="f.eks. 1" value="1" min="1" oninput="opdaterYouSeeKolonner(); opdaterBesparelser();">
+
+        <button onclick="opdaterBesparelser()">Beregn Besparelse</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th colspan="1"></th>
+                <th colspan="4">YouSee</th>
+                <th colspan="5">TELENOR</th>
+                <th colspan="4">CBB</th>
+                <th colspan="4">3</th>
+            </tr>
+            <tr>
+                <th>Abonnementstype</th>
+                <th data-yousee-navn-1="Fri 20 5G" data-yousee-navn-multi="Fri 40 5G">Fri 20 5G</th>
+                <th data-yousee-navn-1="Fri 40 5G" data-yousee-navn-multi="Fri 80 5G">Fri 40 5G</th>
+                <th data-yousee-navn-1="Fri 80 GB 5G" data-yousee-navn-multi="Fri 160 GB 5G">Fri 80 GB 5G</th>
+                <th data-yousee-navn-1="Fri & Fri GB 5G" data-yousee-navn-multi="Fri & Fri GB 5G">Fri & Fri GB 5G</th>
+                <th>U24 Fri*120GB 5G</th>
+                <th>Fri 30 gb 5G</th>
+                <th>Fri 60 5G</th>
+                <th>Fri 120 5G</th>
+                <th>Fri Fri 5G</th>
+                <th>Fri 60 5G</th>
+                <th>Fri 200 5G</th>
+                <th>Fri 500 5G</th>
+                <th>Fri inkl 2 mix tjenester</th>
+                <th>Fri 100 5G</th>
+                <th>Fri 50 5G</th>
+                <th>Fri 100 5G</th>
+                <th>Fri Fri 5G / Fri 10 Extra</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="raekke-abonnement-pris">
+                <th>Abonnement pr. måned (Total for alle numre)</th>
+                <td data-abonnement-pris="149"></td> <td data-abonnement-pris="179"></td> <td data-abonnement-pris="219"></td> <td data-abonnement-pris="279"></td>
+                <td data-abonnement-pris="169"></td> <td data-abonnement-pris="169"></td> <td data-abonnement-pris="199"></td> <td data-abonnement-pris="239"></td> <td data-abonnement-pris="279"></td>
+                <td data-abonnement-pris="109"></td> <td data-abonnement-pris="129"></td> <td data-abonnement-pris="149"></td> <td data-abonnement-pris="300"></td>
+                <td data-abonnement-pris="125"></td> <td data-abonnement-pris="160"></td> <td data-abonnement-pris="210"></td> <td data-abonnement-pris="270"></td>
+            </tr>
+            <tr id="raekke-rabat">
+                <th>Beregnet Rabat (Ved køb af ét produkt)</th> <td data-rabat="300" class="rabat-tekst"></td> <td data-rabat="450" class="rabat-tekst"></td> <td data-rabat="600" class="rabat-tekst"></td> <td data-rabat="1000" class="rabat-tekst"></td>
+                <td data-rabat="300" class="rabat-tekst"></td> <td data-rabat="300" class="rabat-tekst"></td> <td data-rabat="450" class="rabat-tekst"></td> <td data-rabat="650" class="rabat-tekst"></td> <td data-rabat="800" class="rabat-tekst"></td>
+                <td data-rabat="100" class="rabat-tekst"></td> <td data-rabat="250" class="rabat-tekst"></td> <td data-rabat="500" class="rabat-tekst"></td> <td data-rabat="500" class="rabat-tekst"></td>
+                <td data-rabat="200" class="rabat-tekst"></td> <td data-rabat="300" class="rabat-tekst"></td> <td data-rabat="600" class="rabat-tekst"></td> <td data-rabat="850" class="rabat-tekst"></td>
+            </tr>
+             <tr id="raekke-ekstra-rabat-input">
+                <th>Ekstra rabat på produkt (pr. plan):</th> <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+                <td><input type="number" class="ekstra-rabat-input" value="0" oninput="opdaterBesparelser()"></td>
+            </tr>
+            <tr id="raekke-betal-idag">
+                <th>Betal i dag (Produktpris - Total Rabat)</th>
+                <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td>
+                <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td>
+                <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td>
+                <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td> <td class="betal-idag-pris"></td>
+            </tr>
+             <tr id="raekke-nuvaerende-omkostning">
+                <th>Pris hvis du beholder nuværende abonnement (over 6 mdr.)</th>
+                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+            <tr id="raekke-ialt-6mdr">
+                <th>I alt med nyt abb. (over 6 mdr.)</th>
+                <td></td> <td></td> <td></td> <td></td>
+                <td></td> <td></td> <td></td> <td></td> <td></td>
+                <td></td> <td></td> <td></td> <td></td>
+                <td></td> <td></td> <td></td> <td></td>
+            </tr>
+            <tr id="raekke-din-besparelse">
+                <th>Din Besparelse (i forhold til nu over 6 mdr.)</th>
+                <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td>
+                <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td>
+                <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td>
+                <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td> <td class="besparelse-resultat"></td>
+            </tr>
+             <tr>
+                <td colspan="18">NB: Der skal være ligeså mange produkter på bon som der er valgt abonnement, og varerne skal have en udsalgspris på minimum 249 kr. og minimum 1,- pr. vare.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        function opdaterYouSeeKolonner() {
+            const antalNumreInput = document.getElementById("antalNumre").value;
+            const antalNumre = parseInt(antalNumreInput) || 1;
+            // Select YouSee headers that have the specific data attributes
+            const youSeeHeaders = document.querySelectorAll('thead tr:nth-child(2) th[data-yousee-navn-1]');
+
+            youSeeHeaders.forEach(header => {
+                if (antalNumre > 1) {
+                    header.textContent = header.getAttribute('data-yousee-navn-multi');
+                } else {
+                    header.textContent = header.getAttribute('data-yousee-navn-1');
+                }
+            });
+        }
+
+        function opdaterBesparelser() {
+            // Always update YouSee headers first based on number of lines
+            opdaterYouSeeKolonner();
+
+            const nuvaerendeAbonnementPrisPrMaanedInput = document.getElementById("abonnement").value;
+            const produktPrisBetaltIDagInput = document.getElementById("indtastPris").value;
+            const antalNumreInput = document.getElementById("antalNumre").value;
+
+            // Get numerical values
+            const nuvaerendeAbonnementPrisPrMaaned = parseFloat(nuvaerendeAbonnementPrisPrMaanedInput);
+            const produktPrisBetaltIDag = parseFloat(produktPrisBetaltIDagInput) || 0;
+            let antalNumre = parseInt(antalNumreInput);
+
+             // Basic validation for antalNumre - set to 1 if invalid or less than 1
+            if (isNaN(antalNumre) || antalNumre < 1) {
+                 antalNumre = 1;
+                 // document.getElementById("antalNumre").value = 1; // Optional: reset input visually
+            }
+
+            const rækkeNytAbonnementPris = document.getElementById('raekke-abonnement-pris');
+            const rækkeRabat = document.getElementById('raekke-rabat');
+            const rækkeEkstraRabatInput = document.getElementById('raekke-ekstra-rabat-input'); // Get the new row
+            const rækkeBetalIDag = document.getElementById('raekke-betal-idag');
+            const rækkeNuværendeOmkostning = document.getElementById('raekke-nuvaerende-omkostning');
+            const rækkeIalt6Mdr = document.getElementById('raekke-ialt-6mdr');
+            const rækkeDinBesparelse = document.getElementById('raekke-din-besparelse');
+
+            const nyeAbonnementPrisCeller = rækkeNytAbonnementPris.querySelectorAll('td[data-abonnement-pris]');
+            const rabatCeller = rækkeRabat.querySelectorAll('td[data-rabat]');
+            const ekstraRabatInputCeller = rækkeEkstraRabatInput.querySelectorAll('.ekstra-rabat-input'); // Get the input fields in the new row
+            const betalIDagPrisCeller = rækkeBetalIDag.querySelectorAll('.betal-idag-pris');
+            const nuvaerendeOmkostningCeller = rækkeNuværendeOmkostning.querySelectorAll('td');
+            const ialt6MdrCeller = rækkeIalt6Mdr.querySelectorAll('td');
+            const dinBesparelseCeller = rækkeDinBesparelse.querySelectorAll('.besparelse-resultat');
+
+            // Determine if required inputs for full calculation results are valid
+            const inputsAreValid = !isNaN(nuvaerendeAbonnementPrisPrMaaned) && antalNumre >= 1;
+
+            let totalNuværendeOmkostningOver6Mdr = 0;
+            if (inputsAreValid) {
+                 totalNuværendeOmkostningOver6Mdr = produktPrisBetaltIDag + (nuvaerendeAbonnementPrisPrMaaned * 6);
+            }
+
+
+            for (let i = 0; i < nyeAbonnementPrisCeller.length; i++) {
+                const baseAbonnementPris = parseFloat(nyeAbonnementPrisCeller[i].getAttribute('data-abonnement-pris'));
+                const baseRabatPerNummer = parseFloat(rabatCeller[i].getAttribute('data-rabat'));
+
+                // Get the extra rabat value specific to this column
+                const ekstraRabatPerPlan = parseFloat(ekstraRabatInputCeller[i].value) || 0;
+
+
+                let providerCalculatedRabat;
+
+                const isYouSee = i >= 0 && i <= 3;
+                const isTelenor = i >= 4 && i <= 8;
+                const isCbb = i >= 9 && i <= 12;
+                const is3 = i >= 13 && i <= 16;
+                const isLast3Column = i === 16;
+
+                // Calculate provider-specific initial discount
+                if (isYouSee) {
+                    providerCalculatedRabat = baseRabatPerNummer + (antalNumre > 1 ? (antalNumre - 1) * 250 : 0);
+                } else if (isTelenor) {
+                     providerCalculatedRabat = (baseRabatPerNummer * antalNumre) + (antalNumre > 1 ? (antalNumre - 1) * 50 : 0);
+                } else if (is3) {
+                    if (isLast3Column) {
+                         providerCalculatedRabat = baseRabatPerNummer + (antalNumre > 1 ? (antalNumre - 1) * 200 : 0);
+                    } else {
+                         providerCalculatedRabat = baseRabatPerNummer * antalNumre;
+                    }
+                } else if (isCbb) {
+                     providerCalculatedRabat = baseRabatPerNummer * antalNumre;
+                } else {
+                     providerCalculatedRabat = 0;
+                }
+
+                // Total rabat is the provider calculated rabat PLUS the extra rabat entered for this specific plan
+                const totalRabatForPlan = providerCalculatedRabat + ekstraRabatPerPlan;
+
+
+                 // Display the provider calculated rabat (excluding the extra manual rabat) in the "Beregnet Rabat" row
+                if (rabatCeller[i]) {
+                    rabatCeller[i].textContent = providerCalculatedRabat.toFixed(2).replace('.', ',') + " kr.";
+                }
+
+
+                let faktiskTotalMaanedligAboPrisForPlan;
+
+                // Calculation for total monthly subscription price for the new plan (for *all* numbere)
+                if (isYouSee) {
+                    if (antalNumre > 1) {
+                        faktiskTotalMaanedligAboPrisForPlan = baseAbonnementPris + (antalNumre - 1) * 149;
+                    } else {
+                        faktiskTotalMaanedligAboPrisForPlan = baseAbonnementPris;
+                    }
+                } else if (isTelenor) {
+                     if (antalNumre > 1) {
+                         faktiskTotalMaanedligAboPrisForPlan = (baseAbonnementPris * antalNumre) - (antalNumre - 1) * 50;
+                     } else {
+                         faktiskTotalMaanedligAboPrisForPlan = baseAbonnementPris;
+                     }
+                } else { // CBB and 3
+                    faktiskTotalMaanedligAboPrisForPlan = baseAbonnementPris * antalNumre;
+                }
+
+
+                 // Always display the new calculated total monthly price for the plan(s)
+                if (nyeAbonnementPrisCeller[i]) {
+                     nyeAbonnementPrisCeller[i].textContent = Math.max(0, faktiskTotalMaanedligAboPrisForPlan).toFixed(2).replace('.', ',') + " kr.";
+                }
+
+
+                // Only calculate and display the rest if inputs are valid
+                if (inputsAreValid) {
+
+                     // Populate the 'Pris hvis du beholder nuværende abonnement (over 6 mdr.)' row
+                     if (nuvaerendeOmkostningCeller[i]) {
+                         nuvaerendeOmkostningCeller[i].textContent = totalNuværendeOmkostningOver6Mdr.toFixed(2).replace('.', ',') + " kr.";
+                          if (totalNuværendeOmkostningOver6Mdr < 0) {
+                             nuvaerendeOmkostningCeller[i].classList.add('negative-value');
+                          } else {
+                             nuvaerendeOmkostningCeller[i].classList.remove('negative-value');
+                          }
+                     }
+
+
+                     // Calculate "Betal i dag" as the price of *one* product minus the total rabat (provider calculated + extra manual)
+                     const betalIDagPris = produktPrisBetaltIDag - totalRabatForPlan;
+                     if (betalIDagPrisCeller[i]) {
+                         const displayedBetalIDagPris = Math.max(1, betalIDagPris);
+                         betalIDagPrisCeller[i].textContent = displayedBetalIDagPris.toFixed(2).replace('.', ',') + " kr.";
+                          if (betalIDagPris < 1) {
+                             betalIDagPrisCeller[i].classList.add('negative-value');
+                          } else {
+                             betalIDagPrisCeller[i].classList.remove('negative-value');
+                          }
+                     }
+
+                     // Calculate Total over 6 months: Price of *one* product + Total new monthly cost for 6 months - Total rabat + YouSee setup fee
+                     let youSeeSetupFee = 0;
+                     if (isYouSee) {
+                         youSeeSetupFee = 99;
+                     }
+
+                     const totalNyOmkostningOver6Mdr = produktPrisBetaltIDag + (faktiskTotalMaanedligAboPrisForPlan * 6) - totalRabatForPlan + youSeeSetupFee;
+
+                     if (ialt6MdrCeller[i]) {
+                          ialt6MdrCeller[i].textContent = totalNyOmkostningOver6Mdr.toFixed(2).replace('.', ',') + " kr.";
+                          if (totalNyOmkostningOver6Mdr < 0) {
+                             ialt6MdrCeller[i].classList.add('negative-value');
+                          } else {
+                             ialt6MdrCeller[i].classList.remove('negative-value');
+                          }
+                     }
+
+                     // Calculate Your Savings: Total current cost over 6 months - Total new cost over 6 months
+                     const dinBesparelse = totalNuværendeOmkostningOver6Mdr - totalNyOmkostningOver6Mdr;
+
+                     if (dinBesparelseCeller[i]) {
+                         dinBesparelseCeller[i].textContent = dinBesparelse.toFixed(2).replace('.', ',') + " kr.";
+                          if (dinBesparelse < 0) {
+                             dinBesparelseCeller[i].classList.add('negative-value');
+                          } else {
+                             dinBesparelseCeller[i].classList.remove('negative-value');
+                          }
+                     }
+                } else {
+                    // If required inputs are not valid, clear the calculation result cells
+                     if (nuvaerendeOmkostningCeller[i]) {
+                         nuvaerendeOmkostningCeller[i].textContent = '';
+                          nuvaerendeOmkostningCeller[i].classList.remove('negative-value');
+                     }
+                     if (betalIDagPrisCeller[i]) {
+                         betalIDagPrisCeller[i].textContent = '';
+                          betalIDagPrisCeller[i].classList.remove('negative-value');
+                     }
+                     if (ialt6MdrCeller[i]) {
+                         ialt6MdrCeller[i].textContent = '';
+                          ialt6MdrCeller[i].classList.remove('negative-value');
+                     }
+                     if (dinBesparelseCeller[i]) {
+                         dinBesparelseCeller[i].textContent = '';
+                          dinBesparelseCeller[i].classList.remove('negative-value');
+                     }
+                }
+            }
+        }
+
+        // Initial call to populate the table on page load
+        opdaterBesparelser();
+    </script>
+</body>
+</html>
